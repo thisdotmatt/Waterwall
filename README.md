@@ -1,4 +1,4 @@
-# Waterwall
+# Waterwall (WIP)
 ## Description
 A comprehensive, local Linux firewall written in python and utilizing Scapy and NetfilterQueue. Waterwall is updateable in real time through a web-based interface and database. 
 
