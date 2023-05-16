@@ -55,13 +55,13 @@ while True:
     raw_packet = packet[0]
     print(packet)
     # Process and filter the packet
-    #process_packet(raw_packet)
-    # header=struct.unpack('!BBHHHBBHBBBBBBBB', packet[:20])
-    # if(header[6]==6): #header[6] is the field of the Protocol
-    #     print("Protocol = TCP")
-    # elif(header[6]==17):
-    #     print("Protocol = UDP")
-    # elif(header[5]==1):
-    #     print("Protocol = ICMP") 
+    process_packet(raw_packet)
+    header=struct.unpack('!BBHHHBBHBBBBBBBB', packet[:20])
+    if(header[6]==6): #header[6] is the field of the Protocol
+        print("Protocol = TCP")
+    elif(header[6]==17):
+        print("Protocol = UDP")
+    elif(header[5]==1):
+        print("Protocol = ICMP") 
     
 
