@@ -1,3 +1,6 @@
+#Matthew Grimalovsky 2023
+#Work-in-Progress
+
 from scapy.all import *
 from netfilterqueue import NetfilterQueue
 import os
@@ -31,11 +34,11 @@ def check_root_privileges():
 # Call the function to check for root privileges
 check_root_privileges()
 command = "sudo iptables -I INPUT -j NFQUEUE --queue-num 1"
-result = subprocess.run(command, shell=True,capture_output=True,text=True)
+subprocess.run(command, shell=True)
 command = "sudo iptables -I OUTPUT -j NFQUEUE --queue-num 1"
-result = subprocess.run(command, shell=True,capture_output=True,text=True)
+subprocess.run(command, shell=True)
 command = "sudo iptables -I FORWARD -j NFQUEUE --queue-num 1"
-result = subprocess.run(command, shell=True,capture_output=True,text=True)
+subprocess.run(command, shell=True)
 
 
 # Function to handle incoming packets from the queue

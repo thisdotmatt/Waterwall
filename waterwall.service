@@ -1,0 +1,10 @@
+[Unit]
+Description=My Program
+After=network.target
+
+[Service]
+ExecStart=./waterwall
+WorkingDirectory= /usr/bin
+
+[Install]
+WantedBy=multi-user.target
