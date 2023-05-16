@@ -9,6 +9,7 @@ import netifaces
 
 interface_dict = {}
 my_interfaces = netifaces.interfaces()
+
 #Etablish interface: IP address Dictionary
 for interface in my_interfaces:
 	interface_dict[interface] = []
@@ -49,14 +50,14 @@ def handle_packet(packet):
 		packet.drop()
 	if pkt.src in blocked_ip or pkt.dst in blocked_ip:
 		packet.drop()
-	if TCP in pkt:
+	if pkt.haslayer(TCP):
 		dport = pkt[TCP].dport
 		sport = pkt[TCP].sport
 		if dport in blocked_dports:
 			packet.drop()
 		if sport in blocked_sports:
 			packet.drop()
-	if UDP in pkt:
+	if pkt.haslayer(UDP):
 		dport = pkt[UDP].dport
 		sport = pkt[UDP].sport
 		if dport in blocked_dports:
@@ -68,14 +69,10 @@ def handle_packet(packet):
 nfqueue = NetfilterQueue()
 nfqueue.bind(1, handle_packet)
 
-print("Running good so far")
-# Run the queue
 try:
-	print("Working")
+	print("Waterwall 1.0 Running.")
 	nfqueue.run()
 except KeyboardInterrupt:
 	pass
 	print("Interrupted")
-
-# Cleanup
 nfqueue.unbind()
