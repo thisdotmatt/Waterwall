@@ -4,9 +4,10 @@ dbname = get_database()
 collection = dbname["user1_rules"]
 def init_db():
     item_1 = {
-        "banned_ip" : ["127.222.0.0"],
-        "banned_dport" : ["52"],
-        "banned_sport" : []
+        "blocked_ip" : ["127.222.0.0"],
+        "blocked_dport" : ["152"],
+        "blocked_sport" : ["1234", "130"],
+        "blocked_proto" : ["51", "89"]
     }
     collection.insert_one(item_1)
 
@@ -21,6 +22,7 @@ if collection_length == 0: #collection is empty, initialize
     init_db()
 
 rules = get_db()
-banned_ip = rules["banned_ip"]
-banned_dport = rules["banned_dport"]
-banned_sport = rules["banned_sport"]
+blocked_ip = rules["blocked_ip"]
+blocked_dport = rules["blocked_dport"]
+blocked_sport = rules["blocked_sport"]
+blocked_proto = rules["blocked_proto"]
