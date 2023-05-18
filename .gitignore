@@ -1,3 +1,6 @@
+#MongoDB/API Stuff
+mongo_db_setup.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
