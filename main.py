@@ -19,7 +19,10 @@ for interface in my_interfaces:
 		for i in range(len(addr_dict[num])):
 			interface_dict[interface].append(addr_dict[num][i]['addr'])
 
+init_db()
+
 mode = "block_focus"
+packet_counter = 0
 blocked_ip = [] #List of Blocked IPs
 sport = 0
 dport = 0
@@ -45,7 +48,16 @@ subprocess.run(command, shell=True)
 
 # Function to handle incoming packets from the queue
 def handle_packet(packet):
-	#Handle
+	
+	#Update every 50 packets sent... TODO: Examine async implementation
+	packet_counter += 1
+	if packet_counter % 50 == 0:
+		rules = get_db()
+		blocked_ip = rules["blocked_ip"]
+		blocked_dports = rules["blocked_dport"]
+		blocked_sports = rules["blocked_sport"]
+		blocked_proto = rules["blocked_proto"]
+
 	pkt = IP(packet.get_payload())
 	if pkt.proto in blocked_proto:
 		packet.drop()
