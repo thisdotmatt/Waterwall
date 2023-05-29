@@ -1,53 +1,61 @@
 import './App.css';
 function App() {
   return (
-    <Home {...homeData} />
+    <Home />
   );
 }
 
 export default App;
 
-function Home(props) {
-  const {
-    waterwall_logo,
-    protectingYourTech,
-    weProvideOnlyThe,
-    globe,
-    servingCommunities,
-    comp12,
-    comp11,
-    comp122,
-    comp13,
-    comp5,
-    comp7,
-  } = props;
-
+function Home() {
   return (
-    <div className = "container-center-horizontal">
-      <div className= "home screen">
-        <div className = "flex-col">
-          <div className = "flex-row">
-            <img className="waterwall_logo" src={waterwall_logo} alt="Waterwall Logo" />
-            <Component12 place={comp12.place}/>
-            <Component1>{comp11.children}</Component1>
-            <Component1 className={comp122.className}>
-              {comp122.children}
-            </Component1>
-            <Component1 className={comp13.className}>
-              {comp13.children}
-            </Component1>
-          </div>
-          <h1 className="protecting-your-tech outfit-normal-white-55px">{protectingYourTech}</h1>
+    <>
+    <div className='nav-bar'>
+      <div className='nav-bar-logo'>
+        <img src="" alt="Waterwall Logo"/>
+      </div>
+      <div className='nav-bar-links'>
+        <ul>
+          <li>HOME</li>
+          <li>PRODUCTS</li>
+          <li>CONTACT</li>
+          <li>LOGIN</li>
+        </ul>
+      </div>
+    </div>
+    <div className='main-content'>
+      <div className='main-content-col1'>
+        <div className='heading-1'>
+          <h1 className='heading-text'>Protecting your technology</h1>
+          <h1 className='heading-text'>with the click of a button.</h1>
         </div>
-        <div className="flex-row-1">
-          <div className="flew-col-1">
-            <p className="we-provide-only-the outfit-light-white-25px">
-              {weProvideOnlyThe}
-            </p>
+        <div className='heading-2'>
+          <p className='paragraph-text'>We provide only the best, most affordable products
+          on the market. Our customizable firewall is state-of-the-art and has won nearly
+          a dozen cybersecurity awards.</p>
+        </div>
+        <div className='cta-div'>
+          <div className='cta-main'>
+            <button>Try It Out</button>
+          </div>
+          <div className='cta-secondary'>
+            <button>Learn More</button>
           </div>
         </div>
       </div>
-    </div>
 
-  )
+      <div className='main-content-col2'>
+        <div className='earth-image'>
+          <img src="" alt="Earth Image"/>
+        </div>
+        <div className='image-sub-div'>
+          <p className='image-sub-text'>
+            Serving Communities Worldwide<b/>
+            It's Who We Are.
+          </p>
+        </div>
+      </div>
+    </div>
+    </>
+  );
 }

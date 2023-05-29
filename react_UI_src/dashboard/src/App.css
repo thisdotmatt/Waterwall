@@ -1,39 +1,28 @@
-@import url("https://fonts.googleapis.com/css?family=Outfit:300,400,700");
-
-.screen a {
-  display: contents;
-  text-decoration: none;
-}
-
-.container-center-horizontal {
+.nav-bar {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  pointer-events: none;
-  width: 100%;
+  width: auto;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 
-.container-center-horizontal > * {
-  flex-shrink: 0;
-  pointer-events: auto;
+.nav-bar-logo {
+  width: 50px;
+  height: 50px;
+  padding: 50px 50px 50px 50px;
+  background-color: antiquewhite;
 }
 
-.home {
-  align-items: flex-start;
-  border: 1px none;
+.nav-bar-links {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-  height: 1024px;
-  padding: 30px 128px;
-  width: 1440px;
+  flex-grow: 1;
+  background-color: grey;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.flex-col {
-  align-items: flex-start;
+ul {
   display: flex;
-  flex-direction: column;
-  gap: 57px;
-  min-height: 338px;
-  width: 1170px;
+  width: 23%;
+  justify-content: space-between;
 }
+
