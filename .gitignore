@@ -1,5 +1,8 @@
-#MongoDB/API Stuff
+#Waterwall-Specific
 mongo_db_setup.py
+.vscode
+__pycache__
+testing/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
