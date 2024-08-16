@@ -13,7 +13,6 @@ dependencies:
   - python=3.9.19=h4de0772_0_cpython
   - setuptools=72.1.0=pyhd8ed1ab_0
   - tk=8.6.13=h5226925_1
-  - tzdata=2024a=h0c530f3_0
   - ucrt=10.0.22621.0=h57928b3_0
   - vc=14.3=h8a93ad2_20
   - vc14_runtime=14.40.33810=ha82c5b3_20
@@ -21,6 +20,19 @@ dependencies:
   - wheel=0.44.0=pyhd8ed1ab_0
   - xz=5.2.6=h8d14728_0
   - pip:
+      - frozenlist==1.4.1
+      - fsspec==2024.6.1
+      - idna==3.7
+      - multidict==6.0.5
+      - numpy==2.0.1
+      - packaging==24.1
       - psutil==6.0.0
+      - pytz==2024.1
+      - pyyaml==6.0.2
       - scapy==2.5.0
+      - six==1.16.0
+      - typing-extensions==4.12.2
+      - tzdata==2024.1
+      - urllib3==2.2.2
+      - xxhash==3.4.1
 prefix: C:\Users\mgrim\anaconda3\envs\waterwall
