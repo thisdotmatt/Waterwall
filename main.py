@@ -10,10 +10,9 @@ from copy import copy
 def save_flows_to_csv(completed_flows, filename):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(unsw_columns)  # Write the header
+        writer.writerow(unsw_columns)
         count = 0
         for flow_id, flow in completed_flows.items():
-            # Extract necessary data from the flow
             row = [
                 count,                               # 'id'
                 flow['duration'],                      # 'dur'
