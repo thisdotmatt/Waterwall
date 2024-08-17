@@ -62,6 +62,7 @@ dependencies:
       - scapy==2.5.0
       - scikit-learn==1.5.1
       - scipy==1.13.1
+      - seaborn==0.13.2
       - six==1.16.0
       - sympy==1.13.2
       - threadpoolctl==3.5.0
