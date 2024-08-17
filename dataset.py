@@ -1,72 +1,85 @@
-from datasets import load_dataset
-import pandas as pd
-import numpy as np
 import torch
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import DataLoader, TensorDataset
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import torch.nn as nn
 import torch.optim as optim
-from cnn import CNN
+from torch.utils.data import DataLoader, TensorDataset
+import torch.nn.functional as F
+from datasets import load_dataset
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from models import EnhancedCNN
+import pandas as pd
 
-dataset = load_dataset("Mouwiya/UNSW-NB15-small")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Device found: {device}")
 
-df_train = pd.DataFrame(dataset['train'])
-df_test = pd.DataFrame(dataset['test'])
+def log_transform(df, numeric_features, non_log_features):
+    df_logs = np.log10(df[list(set(numeric_features) - set(non_log_features))] + 1)
+    df_combined = pd.concat([df_logs, df[non_log_features]], axis=1)
+    return df_combined
 
-non_numeric = ['is_sm_ips_ports', 'is_ftp_login']
+def normalize_data(tensor, mean, std):
+    return (tensor - mean) / std
 
-features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
-            'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb',
-            'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth',
-            'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm',
-            'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd',
-            'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports']
+def preprocess_data(dataset):
+    print("Preprocessing Dataset.")
+    df_train = pd.DataFrame(dataset['train'])
+    df_test = pd.DataFrame(dataset['test'])
 
-numeric_features = list(set(features) - set(non_numeric))
-non_log = ['sttl', 'dttl', 'swin', 'dwin', 'trans_depth', 'ct_state_ttl', 'ct_flw_http_mthd']
+    non_numeric = ['is_sm_ips_ports', 'is_ftp_login']
+    features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
+                'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb', 
+                'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth', 
+                'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
+                'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
+                'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports']
 
-df_train_logs = np.log10(df_train[list(set(numeric_features) - set(non_log))] + 1)
-df_test_logs = np.log10(df_test[list(set(numeric_features) - set(non_log))] + 1)
+    numeric_features = list(set(features) - set(non_numeric))
+    non_log = ['sttl', 'dttl', 'swin', 'dwin', 'trans_depth', 'ct_state_ttl', 'ct_flw_http_mthd']
 
-df_train_numeric = pd.concat([df_train_logs, df_train[non_log]], axis=1)
-df_test_numeric = pd.concat([df_test_logs, df_test[non_log]], axis=1)
+    df_train_numeric = log_transform(df_train, numeric_features, non_log)
+    df_test_numeric = log_transform(df_test, numeric_features, non_log)
 
-scaler = StandardScaler()
-X_train = scaler.fit_transform(df_train_numeric)
-X_test = scaler.transform(df_test_numeric)
+    X_train_tensor = torch.tensor(df_train_numeric.values, dtype=torch.float32)
+    X_test_tensor = torch.tensor(df_test_numeric.values, dtype=torch.float32)
 
-y_train = (df_train['attack_cat'] != 'Normal').astype(int).values
-y_test = (df_test['attack_cat'] != 'Normal').astype(int).values
+    train_mean = X_train_tensor.mean(dim=0)
+    train_std = X_train_tensor.std(dim=0)
 
-X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
-y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
-X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
-y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
+    X_train_tensor = normalize_data(X_train_tensor, train_mean, train_std)
+    X_test_tensor = normalize_data(X_test_tensor, train_mean, train_std)
 
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    y_train_tensor = torch.tensor((df_train['attack_cat'] != 'Normal').astype(int).values, dtype=torch.float32)
+    y_test_tensor = torch.tensor((df_test['attack_cat'] != 'Normal').astype(int).values, dtype=torch.float32)
 
-model = CNN(train_shape=X_train.shape[1])
-criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    return X_train_tensor, X_test_tensor, y_train_tensor, y_test_tensor
 
-def train(num_epochs=10):
+# DataLoader creation
+def create_dataloaders(X_train, y_train, X_test, y_test, batch_size=64):
+    print("Creating Dataloader.")
+    train_dataset = TensorDataset(X_train, y_train)
+    test_dataset = TensorDataset(X_test, y_test)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    return train_loader, test_loader
+
+# Model Training
+def train_model(model, train_loader, num_epochs=10, learning_rate=0.002):
+    print("Training Model.")
+    model = model.to(device)
+    criterion = nn.BCELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
         for inputs, labels in train_loader:
-            inputs = inputs.unsqueeze(1)
-            labels = labels.unsqueeze(1)
+            inputs, labels = inputs.unsqueeze(1).to(device), labels.unsqueeze(1).to(device)
 
             optimizer.zero_grad()
-
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-
             loss.backward()
             optimizer.step()
 
@@ -74,16 +87,17 @@ def train(num_epochs=10):
 
         epoch_loss = running_loss / len(train_loader.dataset)
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
-    
 
-def eval():
+# Model Evaluation
+def evaluate_model(model, test_loader):
+    print("Evaluating Model.")
     model.eval()
     y_pred = []
     y_true = []
 
     with torch.no_grad():
         for inputs, labels in test_loader:
-            inputs = inputs.unsqueeze(1)
+            inputs, labels = inputs.unsqueeze(1).to(device), labels.to(device)
             outputs = model(inputs)
             predicted = (outputs > 0.5).float()
             y_pred.extend(predicted.squeeze().tolist())
@@ -101,3 +115,23 @@ def eval():
     print(f'Precision: {precision:.4f}')
     print(f'Recall: {recall:.4f}')
     print(f'F1 Score: {f1:.4f}')
+
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(6, 4))
+    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', cbar=False)
+    plt.xlabel('Predicted labels')
+    plt.ylabel('True labels')
+    plt.title('Confusion Matrix')
+    plt.show()
+
+# Main Execution
+if __name__ == "__main__":
+    dataset = load_dataset("Mouwiya/UNSW-NB15-small")
+    X_train, X_test, y_train, y_test = preprocess_data(dataset)
+    train_loader, test_loader = create_dataloaders(X_train, y_train, X_test, y_test)
+
+    model = EnhancedCNN()
+    train_model(model, train_loader)
+    evaluate_model(model, test_loader)
+
+    torch.save(model.state_dict(), 'models/enhanced_cnn_model.pth')
