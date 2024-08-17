@@ -6,6 +6,22 @@ import zlib
 import csv
 from constants import unsw_columns, port_to_service, SYN, ACK, PSH, RST
 from copy import copy
+import pandas as pd
+import torch
+from dataset import log_transform, normalize_data
+from models import EnhancedCNN
+from constants import dataset_mean, dataset_std
+model = EnhancedCNN()
+
+non_numeric = ['is_sm_ips_ports', 'is_ftp_login']
+numeric_features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
+            'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb', 
+            'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth', 
+            'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
+            'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
+            'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports']
+
+numeric_features = list(set(numeric_features) - set(non_numeric))
 
 def save_flows_to_csv(completed_flows, filename):
     with open(filename, mode='w', newline='') as file:
@@ -63,9 +79,66 @@ def ip_proto(pkt):
     proto_field = pkt.get_field('proto')
     return proto_field.i2s[pkt.proto]
 
-def forward(flows):
-    print(f"Number of Flows: {len(flows)}")
-    print()
+def forward(flows, verbose=False):
+    print(f"Number of Flows: {len(flows)}") if verbose else None
+    flows_data = []
+    for entry in flows:
+        flow_id = entry[0]
+        flow = entry[1]
+        flow_data = {
+            'dur': flow['duration'],
+            'spkts': flow['spkts'],
+            'dpkts': flow['dpkts'],
+            'sbytes': flow['sbytes'],
+            'dbytes': flow['dbytes'],
+            'rate': flow['rate'],
+            'sttl': flow['sttl'],
+            'dttl': flow['dttl'],
+            'sinpkt': flow['sinpkt'],
+            'dinpkt': flow['dinpkt'],
+            'sjit': flow['sjit']*1000,  # Convert to milliseconds
+            'djit': flow['djit']*1000,  # Convert to milliseconds
+            'stcpb': flow['stcpb'],
+            'sload': flow['sload'],
+            'dload': flow['dload'],
+            'dtcpb': flow['dtcpb'],
+            'swin': flow['swin'],
+            'dwin': flow['dwin'],
+            'tcprtt': flow['tcprtt'],
+            'synack': flow['synack'],
+            'ackdat': flow['ackdat'],
+            'smean': flow['smean'],
+            'dmean': flow['dmean'],
+            'trans_depth': flow['trans_depth'],
+            'response_body_len': flow['response_body_len'],
+            'ct_srv_src': flow['ct_srv_src'],
+            'ct_srv_dst': flow['ct_srv_dst'],
+            'ct_state_ttl': flow['ct_state_ttl'],
+            'ct_dst_ltm': flow['ct_dst_ltm'],
+            'ct_src_dport_ltm': flow['ct_src_dport_ltm'],
+            'ct_dst_sport_ltm': flow['ct_dst_sport_ltm'],
+            'ct_dst_src_ltm': flow['ct_dst_src_ltm'],
+            'ct_ftp_cmd': flow['ct_ftp_cmd'],
+            'ct_flw_http_mthd': flow['ct_flw_http_mthd'],
+            'ct_src_ltm': flow['ct_src_ltm'],
+            'sloss': 1,
+            'dloss': 1
+        }
+        flows_data.append(flow_data)
+    df_flows = pd.DataFrame(flows_data)
+    non_log = ['sttl', 'dttl', 'swin', 'dwin', 'trans_depth', 'ct_state_ttl', 'ct_flw_http_mthd']
+
+    df_numeric = log_transform(df_flows, numeric_features, non_log)
+    X_tensor = torch.tensor(df_numeric.values, dtype=torch.float32)
+    X_tensor = normalize_data(X_tensor, dataset_mean, dataset_std)
+
+    model.eval()
+    with torch.no_grad():
+        outputs = model(X_tensor.unsqueeze(1))
+        print(outputs) if verbose else None
+        predictions = (outputs > 0.5).float()
+    print(predictions) if verbose else None
+    return predictions
 
 recent_connections = deque(maxlen=100) # for retrieving last 100 connections
 active_flows_template = defaultdict(lambda: {
@@ -303,17 +376,18 @@ def main():
     active_flows = copy(active_flows_template)
     completed_flows = []
     while True:
-        sniff_duration = 10
+        sniff_duration = 60
         start_time = time.time()
         while time.time() - start_time < sniff_duration:
             sniff(prn=lambda packet: process_packet(packet, active_flows=active_flows), timeout=1, store=False)
-            handle_timeouts(active_flows, completed_flows, time.time(), timeout=5)
+            handle_timeouts(active_flows, completed_flows, time.time(), timeout=15)
             
         for flow_id, flow in active_flows.items():
             final_flow = packet_calculations(flow, flow_id)
             completed_flows.append([flow_id, final_flow])
 
-        forward(completed_flows)
+        predictions = forward(completed_flows)
+        print("Status: Malicious") if sum(predictions) > len(predictions)/2 else print("Status: Normal")
         active_flows = copy(active_flows_template)
         completed_flows = []
         
