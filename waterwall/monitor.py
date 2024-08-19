@@ -12,6 +12,7 @@ from scapy.all import sniff, IP, TCP, UDP, Raw
 from dataset import log_transform, normalize_data
 from models import EnhancedCNN
 from constants import dataset_mean, dataset_std
+from datetime import datetime
 
 model = EnhancedCNN()
 
@@ -401,7 +402,9 @@ def monitor(sniff_duration=60, use_ml=True, save_flows=True, save_path="flows_da
 
         predictions = forward(completed_flows, ml=use_ml, verbose=verbose, save=save_flows, save_path=save_path, append=True)
         model_accuracy = 0.86 # we'd prefer at least model_accuracy % of the predictions match a specific label
-        print("Status: Malicious") if sum(predictions) > len(predictions) * model_accuracy else print("Status: Normal")
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Status: Warning") if sum(predictions) > len(predictions) * model_accuracy else print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Status: Normal")
+        
+        # Cleanup
         active_flows = copy(active_flows_template)
         completed_flows = []
 
