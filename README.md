@@ -43,9 +43,9 @@ For the machine learning model component of the project, I wanted a model that w
 **F1 Score**: 0.8925<br>
 
 <img src="./media/epoch_loss.png" width="450" height="300" /><br>
-<i>Loss curve decreasing as the model learns</i><br><br>
+<i>Figure 1: Loss curve decreasing as the model learns</i><br><br>
 <img src="./media/confusion_8172024.png" width="450" height="300" /><br>
-<i>0 = Normal, 1 = Malicious</i><br><br>
+<i>Figure 2: 0 is Normal, 1 is Malicious</i><br><br>
 
 **Note**: Although the accuracy is fairly high for such a short training period, there are severe limitations to USNW-NB15. The dataset has over 2 million "Normal" activity data points as compared to only about 250,000 "Malicious" activity data points. The effect of this can be seen in the imperfect confusion matrix. In future work, I intend to find a less skewed dataset or construct my own.
 
@@ -54,15 +54,15 @@ To test whether the monitoring system could perform well in a real-world scenari
 <br><br>I first ran my monitoring tool for several minutes to gather a baseline. Then, I used the nmap utility to perform a full network scan of my private network with the goal of triggering Waterwall's warning system. Finally, I used scapy to generate an enormous number of large packets, simulating a DoS attack. The results of each are shown below, with the malicious flows in red.
 
 <img src="./media/network_flow.png" width="450" height="300" /><br>
-*Typical Network Activity*
+*Figure 3: Typical Network Activity*
 <br>
 <br>
 <img src="./media/network_scan.png" width="450" height="300" /><br>
-*Someone is scanning our network for weaknesses!*
+*Figure 4: Someone is scanning our network for weaknesses!*
 <br>
 <br>
 <img src="./media/dos_simulated.png" width="450" height="300" /><br>
-*A malicious actor is flooding the network with packets to shut it down*
+*Figure 5: A malicious actor is flooding the network with packets to shut it down*
 
 ### Disclaimer
 This project was designed for learning purposes, to explore the potential capabilities of cybersecurity when paired with machine learning. This should not serve as a replacement for more mature network security tools, but rather as a supplement. Ignoring this disclaimer puts you at your own risk.
