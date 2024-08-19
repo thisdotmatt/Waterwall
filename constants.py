@@ -86,11 +86,3 @@ dataset_std = torch.tensor([1.8036e+00, 1.0551e+00, 1.6931e+00, 2.5182e+00, 3.79
         2.9994e-02, 1.7207e+00, 7.1909e-01, 4.9707e-01, 7.9420e-01, 6.7411e-01,
         1.0294e+02, 1.1051e+02, 1.2700e+02, 1.2689e+02, 7.7691e-01, 9.5441e-01,
         7.0121e-01])
-
-non_numeric = ['is_sm_ips_ports', 'is_ftp_login']
-numeric_features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
-            'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb', 
-            'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth', 
-            'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
-            'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
-            'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports']

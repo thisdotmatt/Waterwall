@@ -47,7 +47,6 @@ def manage_firewall_rule_dual_stack(rule_type, *args, **kwargs):
 
 def main():
     parser = argparse.ArgumentParser(description="Firewall management script with iptables")
-
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     
     parser_manage_ip = subparsers.add_parser("manage_ip", help="Manage (add or delete) a specific IP address")

@@ -11,10 +11,9 @@ from constants import unsw_columns, port_to_service, SYN, ACK, PSH, RST
 from scapy.all import sniff, IP, TCP, UDP, Raw
 from dataset import log_transform, normalize_data
 from models import EnhancedCNN
-from constants import dataset_mean, dataset_std, numeric_features, non_numeric
+from constants import dataset_mean, dataset_std
 
 model = EnhancedCNN()
-numeric_features = list(set(numeric_features) - set(non_numeric))
 
 def save_flows_to_csv(completed_flows, filename):
     with open(filename, mode='w', newline='') as file:
@@ -74,11 +73,21 @@ def ip_proto(pkt):
 
 def forward(flows, ml, verbose=False, save=True, save_path="flows_data.csv", append=True):
     print(f"Number of Flows: {len(flows)}") if verbose else None
+    predictions = None
     flows_data = []
+    non_numeric = ['is_sm_ips_ports', 'is_ftp_login', 'start_time', 'end_time', 'label'] #features to ignore
+    numeric_features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
+                'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb', 
+                'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth', 
+                'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
+                'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
+                'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports'] #ml features
     for entry in flows:
         flow_id = entry[0]
         flow = entry[1]
         flow_data = {
+            'start_time': flow['start_time'],
+            'end_time': flow['end_time'],
             'dur': flow['duration'],
             'spkts': flow['spkts'],
             'dpkts': flow['dpkts'],
@@ -115,21 +124,15 @@ def forward(flows, ml, verbose=False, save=True, save_path="flows_data.csv", app
             'ct_flw_http_mthd': flow['ct_flw_http_mthd'],
             'ct_src_ltm': flow['ct_src_ltm'],
             'sloss': 1,
-            'dloss': 1
+            'dloss': 1,
+            'label': None
         }
         flows_data.append(flow_data)
     df_flows = pd.DataFrame(flows_data)
 
-    if save:
-        if append and os.path.exists(save_path):
-            df_flows.to_csv(save_path, mode='a', header=False, index=False)
-        else:
-            df_flows.to_csv(save_path, index=False)
-        print(f"Data saved to {save_path}") if verbose else None
-
     if ml:
-        non_log = ['sttl', 'dttl', 'swin', 'dwin', 'trans_depth', 'ct_state_ttl', 'ct_flw_http_mthd']
-        
+        non_log = ['sttl', 'dttl', 'swin', 'dwin', 'trans_depth', 'ct_state_ttl', 'ct_flw_http_mthd'] # numerical columns that do not need to be normalized
+        numeric_features = list(set(numeric_features) - set(non_numeric))
         df_numeric = log_transform(df_flows, numeric_features, non_log)
         X_tensor = torch.tensor(df_numeric.values, dtype=torch.float32)
         X_tensor = normalize_data(X_tensor, dataset_mean, dataset_std)
@@ -141,8 +144,15 @@ def forward(flows, ml, verbose=False, save=True, save_path="flows_data.csv", app
             predictions = (outputs > 0.5).float()
         
         print(predictions) if verbose else None
-        return predictions
-    return None
+        df_flows['label'] = list(predictions)
+    
+    if save:
+        if append and os.path.exists(save_path):
+            df_flows.to_csv(save_path, mode='a', header=False, index=False)
+        else:
+            df_flows.to_csv(save_path, index=False)
+        print(f"Data saved to {save_path}") if verbose else None
+    return predictions
 
 recent_connections = deque(maxlen=100) # for retrieving last 100 connections
 active_flows_template = defaultdict(lambda: {
