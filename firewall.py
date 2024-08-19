@@ -1,40 +1,49 @@
 import subprocess
 import argparse
 
-def modify_firewall_rule(rule, action):
-    """Adds or deletes a firewall rule using iptables."""
+def modify_firewall_rule(rule, action, ip_version="ipv4"):
+    """Adds or deletes a firewall rule"""
+    command = ["iptables"] if ip_version == "ipv4" else ["ip6tables"]
     try:
         if action == "add":
-            subprocess_result = subprocess.run(["iptables"] + rule, check=True, capture_output=True, text=True)
+            subprocess_result = subprocess.run(command + rule, check=True, capture_output=True, text=True)
             return True, subprocess_result.stdout
         elif action == "delete":
-            subprocess_result = subprocess.run(["iptables"] + rule, check=True, capture_output=True, text=True)
+            subprocess_result = subprocess.run(command + rule, check=True, capture_output=True, text=True)
             return True, subprocess_result.stdout
     except subprocess.CalledProcessError as e:
         return False, e.stderr
 
-def list_firewall_rules():
-    """Lists all current iptables rules."""
+def list_firewall_rules(ip_version="ipv4"):
+    """Lists all firewall rules"""
+    command = ["iptables", "-L"] if ip_version == "ipv4" else ["ip6tables", "-L"]
     try:
-        subprocess_result = subprocess.run(["iptables", "-L"], check=True, capture_output=True, text=True)
+        subprocess_result = subprocess.run(command, check=True, capture_output=True, text=True)
         return True, subprocess_result.stdout
     except subprocess.CalledProcessError as e:
         return False, e.stderr
 
-def manage_ip(ip_address, action="add"):
+def manage_ip(ip_address, action="add", ip_version="ipv4"):
     """Adds or deletes a firewall rule to block traffic from a specific IP address."""
     rule = ["-A", "INPUT", "-s", ip_address, "-j", "DROP"] if action == "add" else ["-D", "INPUT", "-s", ip_address, "-j", "DROP"]
-    return modify_firewall_rule(rule, action)
+    return modify_firewall_rule(rule, action, ip_version)
 
-def manage_port(port, protocol="tcp", action="add"):
+def manage_port(port, protocol="tcp", action="add", ip_version="ipv4"):
     """Adds or deletes a firewall rule to block traffic on a specific port and protocol."""
     rule = ["-A", "INPUT", "-p", protocol, "--dport", str(port), "-j", "DROP"] if action == "add" else ["-D", "INPUT", "-p", protocol, "--dport", str(port), "-j", "DROP"]
-    return modify_firewall_rule(rule, action)
+    return modify_firewall_rule(rule, action, ip_version)
 
-def manage_protocol(protocol, action="add"):
+def manage_protocol(protocol, action="add", ip_version="ipv4"):
     """Adds or deletes a firewall rule to block traffic for a specific protocol."""
     rule = ["-A", "INPUT", "-p", protocol, "-j", "DROP"] if action == "add" else ["-D", "INPUT", "-p", protocol, "-j", "DROP"]
-    return modify_firewall_rule(rule, action)
+    return modify_firewall_rule(rule, action, ip_version)
+
+def manage_firewall_rule_dual_stack(rule_type, *args, **kwargs):
+    """Manages firewall rules for both IPv4 and IPv6."""
+    result_ipv4 = rule_type(*args, **kwargs, ip_version="ipv4")
+    result_ipv6 = rule_type(*args, **kwargs, ip_version="ipv6")
+    
+    return result_ipv4, result_ipv6
 
 def main():
     parser = argparse.ArgumentParser(description="Firewall management script with iptables")
