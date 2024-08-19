@@ -42,12 +42,10 @@ For the machine learning model component of the project, I wanted a model that w
 **Recall**: 0.9823<br>
 **F1 Score**: 0.8925<br>
 
-<p float="left">
-<img src="./media/epoch_loss.png" width="450" height="300" />
-<img src="./media/confusion_8172024.png" width="450" height="300" />
-</p>
-
-Here, the loss graph shows the CNN's ability to gradually distinguish between normal and malicious network statements. The confusion matrix (0 representing Normal, 1 representing Malicious) shows the final model's accuracy between the two labels, as well as the false-positives and false-negatives.
+<img src="./media/epoch_loss.png" width="450" height="300" /><br>
+<i>Loss curve decreasing as the model learns</i><br><br>
+<img src="./media/confusion_8172024.png" width="450" height="300" /><br>
+<i>0 = Normal, 1 = Malicious</i><br><br>
 
 **Note**: Although the accuracy is fairly high for such a short training period, there are severe limitations to USNW-NB15. The dataset has over 2 million "Normal" activity data points as compared to only about 250,000 "Malicious" activity data points. The effect of this can be seen in the imperfect confusion matrix. In future work, I intend to find a less skewed dataset or construct my own.
 
