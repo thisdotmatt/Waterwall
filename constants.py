@@ -1,4 +1,6 @@
 import torch
+
+### Dataset Column
 unsw_columns = [
     'id', 'dur', 'proto', 'service', 'state', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 
     'sttl', 'dttl', 'sload', 'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 
@@ -8,6 +10,7 @@ unsw_columns = [
     'ct_flw_http_mthd', 'ct_src_ltm', 'ct_srv_dst'
 ]
 
+### Conversion
 port_to_service = {
     20: 'ftp-data',        # FTP Data Transfer
     21: 'ftp',             # FTP Command Control
@@ -58,6 +61,7 @@ port_to_service = {
     10000: 'snet-sensor-mgmt', # Network Data Management Protocol (NDMP)
 }
 
+### TCP Codes
 FIN = 0x01
 SYN = 0x02
 RST = 0x04
@@ -67,6 +71,7 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
+### Model Related
 dataset_mean = torch.tensor([3.4122e+00, 8.1465e-01, 1.5120e+00, 2.4407e+00, 6.6419e-01, 1.4704e-01,
         6.0494e+00, 3.3197e-01, 8.4520e-03, 1.0876e+00, 4.1495e+00, 5.3080e-01,
         7.1667e-01, 8.6842e-03, 9.7937e-01, 6.8601e-01, 5.8108e-01, 7.9124e-01,
@@ -81,3 +86,11 @@ dataset_std = torch.tensor([1.8036e+00, 1.0551e+00, 1.6931e+00, 2.5182e+00, 3.79
         2.9994e-02, 1.7207e+00, 7.1909e-01, 4.9707e-01, 7.9420e-01, 6.7411e-01,
         1.0294e+02, 1.1051e+02, 1.2700e+02, 1.2689e+02, 7.7691e-01, 9.5441e-01,
         7.0121e-01])
+
+non_numeric = ['is_sm_ips_ports', 'is_ftp_login']
+numeric_features = ['dur', 'spkts', 'dpkts', 'sbytes', 'dbytes', 'rate', 'sttl', 'dttl', 'sload', 
+            'dload', 'sloss', 'dloss', 'sinpkt', 'dinpkt', 'sjit', 'djit', 'swin', 'stcpb', 
+            'dtcpb', 'dwin', 'tcprtt', 'synack', 'ackdat', 'smean', 'dmean', 'trans_depth', 
+            'response_body_len', 'ct_srv_src', 'ct_state_ttl', 'ct_dst_ltm', 'ct_src_dport_ltm', 
+            'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'is_ftp_login', 'ct_ftp_cmd', 'ct_flw_http_mthd', 
+            'ct_src_ltm', 'ct_srv_dst', 'is_sm_ips_ports']
