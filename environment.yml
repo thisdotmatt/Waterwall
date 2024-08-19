@@ -1,4 +1,4 @@
-name: waterwall
+name: waterwall_env
 channels:
   - conda-forge
   - defaults
@@ -75,4 +75,3 @@ dependencies:
       - xxhash==3.4.1
       - yarl==1.9.4
       - zipp==3.20.0
-prefix: C:\Users\mgrim\anaconda3\envs\waterwall
