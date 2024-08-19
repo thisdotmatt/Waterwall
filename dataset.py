@@ -55,7 +55,6 @@ def preprocess_data(dataset):
 
     return X_train_tensor, X_test_tensor, y_train_tensor, y_test_tensor
 
-# DataLoader creation
 def create_dataloaders(X_train, y_train, X_test, y_test, batch_size=64):
     print("Creating Dataloader.")
     train_dataset = TensorDataset(X_train, y_train)
@@ -64,7 +63,6 @@ def create_dataloaders(X_train, y_train, X_test, y_test, batch_size=64):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     return train_loader, test_loader
 
-# Model Training
 def train_model(model, train_loader, num_epochs=10, learning_rate=0.002):
     print("Training Model.")
     model = model.to(device)
@@ -88,7 +86,6 @@ def train_model(model, train_loader, num_epochs=10, learning_rate=0.002):
         epoch_loss = running_loss / len(train_loader.dataset)
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}')
 
-# Model Evaluation
 def evaluate_model(model, test_loader):
     print("Evaluating Model.")
     model.eval()
@@ -124,7 +121,6 @@ def evaluate_model(model, test_loader):
     plt.title('Confusion Matrix')
     plt.show()
 
-# Main Execution
 if __name__ == "__main__":
     dataset = load_dataset("Mouwiya/UNSW-NB15-small")
     X_train, X_test, y_train, y_test = preprocess_data(dataset)
